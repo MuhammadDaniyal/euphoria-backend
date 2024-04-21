@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const collectionRouter = require("./router/collectionRoutes");
+const connect = require("./db/connect");
 
 dotenv.config();
 
@@ -21,6 +22,18 @@ app.get("/", (req, res) => {
   res.send("Express + TypeScript Server");
 });
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
-});
+/** start server */
+
+connect()
+  .then(() => {
+    try {
+      app.listen(port, () => {
+        console.log(`App listening on port ${port}`);
+      });
+    } catch (error) {
+      console.log("Cannot connect with server");
+    }
+  })
+  .catch((error) => {
+    console.log("Database not connected", error);
+  });
