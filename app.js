@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const collectionRouter = require("./router/collectionRoutes");
+const profleRouter = require("./router/profileRoutes");
 const connect = require("./db/connect");
 
 dotenv.config();
@@ -16,7 +16,7 @@ app.use(cors());
 app.disable("x-powered-by");
 
 /** API Routes */
-app.use("/api", collectionRouter);
+app.use("/api/profile", profleRouter);
 
 app.get("/", (req, res) => {
   res.send("Express + TypeScript Server");
