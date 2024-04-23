@@ -1,3 +1,5 @@
+const Profile = require("../models/profileSchema");
+
 async function createProfile(req, res) {
   const { username, email, password } = req.body;
   try {
@@ -19,7 +21,7 @@ async function createProfile(req, res) {
       const salt = await bcrypt.genSalt(10);
       const passwaordHash = await bcrypt.hash(password, salt);
       // create new user
-      const profileDoc = new User({});
+      const profileDoc = new Profile({});
       profileDoc
         .save()
         .then((result) =>
