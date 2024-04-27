@@ -1,3 +1,3 @@
-const { getAllCollection, createNft } = require("./collectionController.js");
+const { createProfile, getAllProfiles } = require("./profileController");
 
-module.exports = { getAllCollection, createNft };
+module.exports = { getAllProfiles, createProfile };
