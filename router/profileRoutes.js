@@ -3,7 +3,7 @@ const { createProfile, getAllProfiles } = require("../controllers");
 const router = Router();
 
 /** POST METHOD */
-router.route("/").post(createProfile); // get the user with username
+router.route("/create-profile").post(createProfile); // get the user with username
 
 /** GET METHOD */
 router.route("/").get(getAllProfiles); // get the user with username
