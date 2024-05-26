@@ -24,7 +24,7 @@ router.route("/").post(
 /** GET METHOD */
 router.route("/:walletAddress").get(getProfile);
 
-/** PUT METHOD */
+/** PATCH METHOD */
 router.route("/:walletAddress/status").patch(updateProfileStatus);
 
 module.exports = router;
