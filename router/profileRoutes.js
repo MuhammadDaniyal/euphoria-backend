@@ -1,13 +1,30 @@
 const { Router } = require("express");
-const { createProfile, getAllProfiles } = require("../controllers");
+const {
+  createProfile,
+  getProfile,
+  updateProfileStatus,
+} = require("../controllers");
+const multer = require("multer");
+
 const router = Router();
 
+// Configure Multer for file uploads
+const upload = multer({ dest: "uploads/" });
+
 /** POST METHOD */
-router.route("/create-profile").post(createProfile); // get the user with username
+router.route("/").post(
+  upload.fields([
+    { name: "profilePic", maxCount: 1 },
+    { name: "coverPic", maxCount: 1 },
+    { name: "backgroundPic", maxCount: 1 },
+  ]),
+  createProfile
+);
 
 /** GET METHOD */
-router.route("/").get(getAllProfiles); // get the user with username
+router.route("/:walletAddress").get(getProfile);
 
 /** PUT METHOD */
+router.route("/:walletAddress/status").patch(updateProfileStatus);
 
 module.exports = router;

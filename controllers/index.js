@@ -1,3 +1,7 @@
-const { createProfile, getAllProfiles } = require("./profileController");
+const {
+  createProfile,
+  getProfile,
+  updateProfileStatus,
+} = require("./profileController");
 
-module.exports = { getAllProfiles, createProfile };
+module.exports = { createProfile, getProfile, updateProfileStatus };

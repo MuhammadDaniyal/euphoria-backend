@@ -1,6 +1,13 @@
 const ProfileRole = {
-    CELEBRITY: "celebrity",
-    FAN: "fan"
+  ADMIN: "admin",
+  CELEBRITY: "celebrity",
+  FAN: "fan",
 };
 
-module.exports = { ProfileRole };
+const ProfileStatus = {
+  PENDING: "pending",
+  ACCEPTED: "accepted",
+  REJECTED: "rejected",
+};
+
+module.exports = { ProfileRole, ProfileStatus };
