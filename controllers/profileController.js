@@ -29,7 +29,7 @@ async function createProfile(req, res) {
     });
 
     if (profileExists) {
-      await deleteFiles(imageFields, req);
+      await deleteFiles([...imageFields, "kycDocument"], req);
 
       const errorMsg =
         profileExists.username === username
@@ -82,7 +82,7 @@ async function createProfile(req, res) {
     const newProfile = new Profile(profileData);
     const response = await newProfile.save();
     if (response) {
-      deleteFiles([...imageFields, "kycDocument"], req);
+      await deleteFiles([...imageFields, "kycDocument"], req);
       return res.status(201).json(response);
     }
   } catch (error) {
