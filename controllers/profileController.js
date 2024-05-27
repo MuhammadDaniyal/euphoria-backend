@@ -72,9 +72,9 @@ async function createProfile(req, res) {
       username: req.body.username,
       email: req.body.email,
       walletAddress: req.body.walletAddress,
-      profilePic: results[0] ? results[0] : undefined,
-      coverPic: results[1] ? results[1] : undefined,
-      backgroundPic: results[2] ? results[2] : undefined,
+      profilePic: results[0] ? results[0].secure_url : undefined,
+      coverPic: results[1] ? results[1].secure_url : undefined,
+      backgroundPic: results[2] ? results[2].secure_url : undefined,
       kycDocument: results[3] ? results[3].secure_url : undefined,
     };
 
