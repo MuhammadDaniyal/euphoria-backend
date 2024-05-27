@@ -8,6 +8,15 @@ const multer = require("multer");
 
 const router = Router();
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
 // Configure Multer for file uploads
 const upload = multer({ dest: "uploads/" });
 

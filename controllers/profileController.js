@@ -1,49 +1,57 @@
+const fs = require('fs');
 const Profile = require("../models/profileSchema");
 const cloudinary = require("../utils/cloudinary");
 
+async function deleteFiles(imagesData, req) {
+  imagesData.forEach((field) => {
+    if (req.files[field]) {
+      fs.unlink(req.files[field][0].path, (err) => {
+        if (err) {
+          console.error(`Error deleting file: ${req.files[field][0].path}`, err);
+        } else {
+          console.log(`Successfully deleted file: ${req.files[field][0].path}`);
+        }
+      });
+    }
+  });
+}
+
 async function createProfile(req, res) {
   try {
-    const usernameExist = await Profile.findOne({
-      username: req.body.username,
-    });
-    const walletAddressExist = await Profile.findOne({
-      walletAddress: req.body.walletAddress,
-    });
-    const emailExist = await Profile.findOne({
-      email: req.body.email,
-    });
+    const imageFields = ["profilePic", "coverPic", "backgroundPic"];
+    const usernameExist = await Profile.findOne({ username: req.body.username });
+    const walletAddressExist = await Profile.findOne({ walletAddress: req.body.walletAddress });
+    const emailExist = await Profile.findOne({ email: req.body.email });
 
     if (usernameExist) {
-      return res.status(400).json({
-        error: "already Profile exist, provide unique username",
-      });
+      deleteFiles(imageFields, req)
+      return res.status(400).json({ error: "Profile with this username already exists, provide a unique username" });
     }
     if (walletAddressExist) {
-      return res.status(400).json({
-        error: "already Profile exist, provide unique wallet address",
-      });
+      deleteFiles(imageFields, req)
+      return res.status(400).json({ error: "Profile with this wallet address already exists, provide a unique wallet address" });
     }
     if (emailExist) {
-      return res.status(400).json({
-        error: "already Profile exist, provide unique email",
-      });
+      deleteFiles(imageFields, req)
+      return res.status(400).json({ error: "Profile with this email already exists, provide a unique email" });
     }
 
     if (!req.files) {
       return res.status(400).send("Error: select the images");
     }
 
-    const imageFields = ["profilePic", "coverPic", "backgroundPic"];
+
     const uploadPromises = imageFields.map((field) => {
       if (req.files[field]) {
-        return cloudinary.uploader.upload(req.files[field][0].path, {
-          folder: "Profile_Media",
-        });
+        return cloudinary.uploader.upload(req.files[field][0].path, { folder: "Profile_Media" });
       }
       return null;
     });
 
     const results = await Promise.all(uploadPromises);
+
+    deleteFiles(imageFields, req)
+
 
     const profileData = {
       role: req.body.role,
@@ -61,7 +69,7 @@ async function createProfile(req, res) {
     res.status(201).json(response);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    return res.status(500).send("Internal Server Error");
   }
 }
 
