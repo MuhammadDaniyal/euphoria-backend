@@ -1,32 +1,21 @@
 const Profile = require("../models/profileSchema");
 const cloudinary = require("../utils/cloudinary");
+const fs = require("fs");
 
 async function createProfile(req, res) {
   try {
-    const usernameExist = await Profile.findOne({
-      username: req.body.username,
-    });
-    const walletAddressExist = await Profile.findOne({
-      walletAddress: req.body.walletAddress,
-    });
-    const emailExist = await Profile.findOne({
-      email: req.body.email,
-    });
+    const usernameExist = await Profile.findOne({ username: req.body.username });
+    const walletAddressExist = await Profile.findOne({ walletAddress: req.body.walletAddress });
+    const emailExist = await Profile.findOne({ email: req.body.email });
 
     if (usernameExist) {
-      return res.status(400).json({
-        error: "already Profile exist, provide unique username",
-      });
+      return res.status(400).json({ error: "Profile already exists, provide unique username" });
     }
     if (walletAddressExist) {
-      return res.status(400).json({
-        error: "already Profile exist, provide unique wallet address",
-      });
+      return res.status(400).json({ error: "Profile already exists, provide unique wallet address" });
     }
     if (emailExist) {
-      return res.status(400).json({
-        error: "already Profile exist, provide unique email",
-      });
+      return res.status(400).json({ error: "Profile already exists, provide unique email" });
     }
 
     if (!req.files) {
@@ -34,14 +23,40 @@ async function createProfile(req, res) {
     }
 
     const imageFields = ["profilePic", "coverPic", "backgroundPic"];
-    const uploadPromises = imageFields.map((field) => {
+    const uploadPromises = imageFields.map(async (field) => {
       if (req.files[field]) {
-        return cloudinary.uploader.upload(req.files[field][0].path, {
-          folder: "Profile_Media",
-        });
+        const filePath = req.files[field][0].path;
+        try {
+          const result = await cloudinary.uploader.upload(filePath, {
+            folder: "Profile_Media",
+          });
+          fs.unlinkSync(filePath); // Delete the file after upload
+          return result.secure_url;
+        } catch (error) {
+          console.error(`Error uploading ${field}:`, error);
+          throw error;
+        }
       }
       return null;
     });
+
+    // Handle KYC document upload
+    if (req.files.kycDocument) {
+      const filePath = req.files.kycDocument[0].path;
+      try {
+        const kycResult = await cloudinary.uploader.upload(filePath, {
+          folder: "Profile_Media",
+          resource_type: "raw",
+        });
+        fs.unlinkSync(filePath); // Delete the file after upload
+        uploadPromises.push(Promise.resolve(kycResult.secure_url));
+      } catch (error) {
+        console.error("Error uploading KYC document:", error);
+        throw error;
+      }
+    } else {
+      uploadPromises.push(null);
+    }
 
     const results = await Promise.all(uploadPromises);
 
@@ -51,9 +66,10 @@ async function createProfile(req, res) {
       username: req.body.username,
       email: req.body.email,
       walletAddress: req.body.walletAddress,
-      profilePic: results[0] ? results[0].secure_url : undefined,
-      coverPic: results[1] ? results[1].secure_url : undefined,
-      backgroundPic: results[2] ? results[2].secure_url : undefined,
+      profilePic: results[0] ? results[0] : undefined,
+      coverPic: results[1] ? results[1] : undefined,
+      backgroundPic: results[2] ? results[2] : undefined,
+      kycDocument: results[3] ? results[3] : undefined,
     };
 
     const newProfile = new Profile(profileData);
@@ -94,12 +110,14 @@ async function updateProfileStatus(req, res) {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    return res.json({ message: "Profile status updated successfully", profile: updatedProfile });
+    return res.json({
+      message: "Profile status updated successfully",
+      profile: updatedProfile,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 }
-
 
 module.exports = { createProfile, getProfile, updateProfileStatus };
