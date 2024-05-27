@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require("fs");
 const Profile = require("../models/profileSchema");
 const cloudinary = require("../utils/cloudinary");
 
@@ -7,7 +7,10 @@ async function deleteFiles(imagesData, req) {
     if (req.files[field]) {
       fs.unlink(req.files[field][0].path, (err) => {
         if (err) {
-          console.error(`Error deleting file: ${req.files[field][0].path}`, err);
+          console.error(
+            `Error deleting file: ${req.files[field][0].path}`,
+            err
+          );
         } else {
           console.log(`Successfully deleted file: ${req.files[field][0].path}`);
         }
@@ -19,21 +22,23 @@ async function deleteFiles(imagesData, req) {
 async function createProfile(req, res) {
   try {
     const imageFields = ["profilePic", "coverPic", "backgroundPic"];
-    const usernameExist = await Profile.findOne({ username: req.body.username });
-    const walletAddressExist = await Profile.findOne({ walletAddress: req.body.walletAddress });
-    const emailExist = await Profile.findOne({ email: req.body.email });
+    const { username, walletAddress, email, role, name } = req.body;
 
-    if (usernameExist) {
-      deleteFiles(imageFields, req)
-      return res.status(400).json({ error: "Profile with this username already exists, provide a unique username" });
-    }
-    if (walletAddressExist) {
-      deleteFiles(imageFields, req)
-      return res.status(400).json({ error: "Profile with this wallet address already exists, provide a unique wallet address" });
-    }
-    if (emailExist) {
-      deleteFiles(imageFields, req)
-      return res.status(400).json({ error: "Profile with this email already exists, provide a unique email" });
+    const profileExists = await Profile.findOne({
+      $or: [{ username }, { walletAddress }, { email }],
+    });
+
+    if (profileExists) {
+      await deleteFiles(imageFields, req);
+
+      const errorMsg =
+        profileExists.username === username
+          ? "Profile with this username already exists, provide a unique username"
+          : profileExists.walletAddress === walletAddress
+          ? "Profile with this wallet address already exists, provide a unique wallet address"
+          : "Profile with this email already exists, provide a unique email";
+
+      return res.status(400).json({ error: errorMsg });
     }
 
     if (!req.files) {
@@ -49,7 +54,6 @@ async function createProfile(req, res) {
       return null;
     });
 
-    // Handle KYC document upload
     if (req.files.kycDocument) {
       uploadPromises.push(
         cloudinary.uploader.upload(req.files.kycDocument[0].path, {
@@ -63,15 +67,12 @@ async function createProfile(req, res) {
 
     const results = await Promise.all(uploadPromises);
 
-    deleteFiles(imageFields, req)
-
-
     const profileData = {
-      role: req.body.role,
-      name: req.body.name,
-      username: req.body.username,
-      email: req.body.email,
-      walletAddress: req.body.walletAddress,
+      username,
+      walletAddress,
+      email,
+      role,
+      name,
       profilePic: results[0] ? results[0].secure_url : undefined,
       coverPic: results[1] ? results[1].secure_url : undefined,
       backgroundPic: results[2] ? results[2].secure_url : undefined,
@@ -80,7 +81,10 @@ async function createProfile(req, res) {
 
     const newProfile = new Profile(profileData);
     const response = await newProfile.save();
-    res.status(201).json(response);
+    if (response) {
+      deleteFiles([...imageFields, "kycDocument"], req);
+      return res.status(201).json(response);
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal Server Error");
