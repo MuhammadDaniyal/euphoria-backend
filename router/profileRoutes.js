@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const path = require("path");
+const fs = require("fs");
 const {
   createProfile,
   getProfile,
@@ -16,6 +18,11 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   }
 });
+// Ensure the uploads directory exists
+const uploadDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Configure Multer for file uploads
 const upload = multer({ dest: "uploads/" });
@@ -26,6 +33,7 @@ router.route("/").post(
     { name: "profilePic", maxCount: 1 },
     { name: "coverPic", maxCount: 1 },
     { name: "backgroundPic", maxCount: 1 },
+    { name: "kycDocument", maxCount: 1 },
   ]),
   createProfile
 );

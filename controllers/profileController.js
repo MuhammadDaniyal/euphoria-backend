@@ -40,13 +40,26 @@ async function createProfile(req, res) {
       return res.status(400).send("Error: select the images");
     }
 
-
     const uploadPromises = imageFields.map((field) => {
       if (req.files[field]) {
-        return cloudinary.uploader.upload(req.files[field][0].path, { folder: "Profile_Media" });
+        return cloudinary.uploader.upload(req.files[field][0].path, {
+          folder: "Profile_Media",
+        });
       }
       return null;
     });
+
+    // Handle KYC document upload
+    if (req.files.kycDocument) {
+      uploadPromises.push(
+        cloudinary.uploader.upload(req.files.kycDocument[0].path, {
+          folder: "Profile_Media",
+          resource_type: "raw", // Use 'raw' for non-image files
+        })
+      );
+    } else {
+      uploadPromises.push(null);
+    }
 
     const results = await Promise.all(uploadPromises);
 
@@ -59,9 +72,10 @@ async function createProfile(req, res) {
       username: req.body.username,
       email: req.body.email,
       walletAddress: req.body.walletAddress,
-      profilePic: results[0] ? results[0].secure_url : undefined,
-      coverPic: results[1] ? results[1].secure_url : undefined,
-      backgroundPic: results[2] ? results[2].secure_url : undefined,
+      profilePic: results[0] ? results[0] : undefined,
+      coverPic: results[1] ? results[1] : undefined,
+      backgroundPic: results[2] ? results[2] : undefined,
+      kycDocument: results[3] ? results[3].secure_url : undefined,
     };
 
     const newProfile = new Profile(profileData);
@@ -102,12 +116,14 @@ async function updateProfileStatus(req, res) {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    return res.json({ message: "Profile status updated successfully", profile: updatedProfile });
+    return res.json({
+      message: "Profile status updated successfully",
+      profile: updatedProfile,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 }
-
 
 module.exports = { createProfile, getProfile, updateProfileStatus };
