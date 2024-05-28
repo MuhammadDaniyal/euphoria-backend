@@ -110,7 +110,7 @@ async function createProfile(req, res) {
 }
 
 async function getProfile(req, res) {
-  const { walletAddress } = req.params; // Assuming the wallet address ID is passed as a URL parameter
+  const { walletAddress } = req.params;
   try {
     const profile = await Profile.findOne({ walletAddress });
     if (!profile) {
