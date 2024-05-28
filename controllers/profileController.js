@@ -135,7 +135,7 @@ async function updateProfileStatus(req, res) {
     );
 
     if (!updatedProfile) {
-      return res.status(404).json({ message: "Profile2 not found" });
+      return res.status(404).json({ message: "Profile not found" });
     }
 
     return res.json({
