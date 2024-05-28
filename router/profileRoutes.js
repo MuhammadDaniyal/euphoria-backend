@@ -5,13 +5,14 @@ const {
   createProfile,
   getProfile,
   updateProfileStatus,
+  getCelebrities,
 } = require("../controllers");
 const multer = require("multer");
 
 const router = Router();
 
 // Ensure the uploads directory exists
-const uploadDir = path.join(__dirname, '..', 'uploads');
+const uploadDir = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -32,6 +33,7 @@ router.route("/").post(
 
 /** GET METHOD */
 router.route("/:walletAddress").get(getProfile);
+router.route("/celebrities").get(getCelebrities);
 
 /** PUT METHOD */
 router.route("/:walletAddress/status").patch(updateProfileStatus);

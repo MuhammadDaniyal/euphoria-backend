@@ -1,6 +1,7 @@
 const fs = require("fs");
 const Profile = require("../models/profileSchema");
 const cloudinary = require("../utils/cloudinary");
+const { ProfileRole } = require("../utils/enum");
 
 async function deleteFiles(imagesData, req) {
   imagesData.forEach((field) => {
@@ -130,4 +131,29 @@ async function updateProfileStatus(req, res) {
   }
 }
 
-module.exports = { createProfile, getProfile, updateProfileStatus };
+async function getCelebrities(req, res) {
+  const { status } = req.query;
+  try {
+    const celebritiesProfiles = await Profile.find({
+      role: ProfileRole.CELEBRITY,
+    });
+    if (query) {
+      const fetchCelebritiesByStatus = celebritiesProfiles.filter(
+        (celebrity) => celebrity.status === status
+      );
+      return res.status(200).json(fetchCelebritiesByStatus);
+    }
+
+    return res.status(200).json(celebritiesProfiles);
+  } catch {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
+module.exports = {
+  createProfile,
+  getProfile,
+  updateProfileStatus,
+  getCelebrities,
+};
