@@ -2,12 +2,12 @@ const {
   createProfile,
   getProfile,
   updateProfileStatus,
-  getCelebrities,
+  getAllCelebrities,
 } = require("./profileController");
 
 module.exports = {
   createProfile,
   getProfile,
   updateProfileStatus,
-  getCelebrities,
+  getAllCelebrities,
 };

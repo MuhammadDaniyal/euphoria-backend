@@ -36,8 +36,8 @@ async function createProfile(req, res) {
         profileExists.username === username
           ? "Profile with this username already exists, provide a unique username"
           : profileExists.walletAddress === walletAddress
-          ? "Profile with this wallet address already exists, provide a unique wallet address"
-          : "Profile with this email already exists, provide a unique email";
+            ? "Profile with this wallet address already exists, provide a unique wallet address"
+            : "Profile with this email already exists, provide a unique email";
 
       return res.status(400).json({ error: errorMsg });
     }
@@ -97,7 +97,7 @@ async function getProfile(req, res) {
   try {
     const profile = await Profile.findOne({ walletAddress });
     if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
+      return res.status(404).json({ message: "Profile1 not found" });
     }
     return res.status(200).json(profile);
   } catch (error) {
@@ -118,7 +118,7 @@ async function updateProfileStatus(req, res) {
     );
 
     if (!updatedProfile) {
-      return res.status(404).json({ message: "Profile not found" });
+      return res.status(404).json({ message: "Profile2 not found" });
     }
 
     return res.json({
@@ -131,20 +131,22 @@ async function updateProfileStatus(req, res) {
   }
 }
 
-async function getCelebrities(req, res) {
+async function getAllCelebrities(req, res) {
   const { status } = req.query;
   try {
     const celebritiesProfiles = await Profile.find({
       role: ProfileRole.CELEBRITY,
     });
-    if (query) {
+    if (status) {
       const fetchCelebritiesByStatus = celebritiesProfiles.filter(
         (celebrity) => celebrity.status === status
       );
       return res.status(200).json(fetchCelebritiesByStatus);
     }
+    else {
+      return res.status(200).json(celebritiesProfiles);
+    }
 
-    return res.status(200).json(celebritiesProfiles);
   } catch {
     console.error(error);
     return res.status(500).send("Internal Server Error");
@@ -155,5 +157,5 @@ module.exports = {
   createProfile,
   getProfile,
   updateProfileStatus,
-  getCelebrities,
+  getAllCelebrities,
 };
