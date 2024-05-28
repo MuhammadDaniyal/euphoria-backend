@@ -1,7 +1,7 @@
 const fs = require("fs");
 const Profile = require("../models/profileSchema");
 const cloudinary = require("../utils/cloudinary");
-const { ProfileRole } = require("../utils/enum");
+const { ProfileRole, ProfileStatus } = require("../utils/enum");
 
 async function deleteFiles(imagesData, req) {
   imagesData.forEach((field) => {
@@ -21,9 +21,18 @@ async function deleteFiles(imagesData, req) {
 }
 
 async function createProfile(req, res) {
+  const imageFields = ["profilePic", "coverPic", "backgroundPic"];
   try {
-    const imageFields = ["profilePic", "coverPic", "backgroundPic"];
-    const { username, walletAddress, email, role, name,managerNumber,managerEmail,websiteURL } = req.body;
+    const {
+      username,
+      walletAddress,
+      email,
+      role,
+      name,
+      managerNumber,
+      managerEmail,
+      websiteURL,
+    } = req.body;
 
     const profileExists = await Profile.findOne({
       $or: [{ username }, { walletAddress }, { email }],
@@ -36,8 +45,8 @@ async function createProfile(req, res) {
         profileExists.username === username
           ? "Profile with this username already exists, provide a unique username"
           : profileExists.walletAddress === walletAddress
-            ? "Profile with this wallet address already exists, provide a unique wallet address"
-            : "Profile with this email already exists, provide a unique email";
+          ? "Profile with this wallet address already exists, provide a unique wallet address"
+          : "Profile with this email already exists, provide a unique email";
 
       return res.status(400).json({ error: errorMsg });
     }
@@ -72,11 +81,15 @@ async function createProfile(req, res) {
       username,
       walletAddress,
       email,
-      role,
       name,
       managerNumber,
       managerEmail,
       websiteURL,
+      role,
+      status:
+        role === ProfileRole.CELEBRITY
+          ? ProfileStatus.PENDING
+          : ProfileStatus.ACCEPTED,
       profilePic: results[0] ? results[0].secure_url : undefined,
       coverPic: results[1] ? results[1].secure_url : undefined,
       backgroundPic: results[2] ? results[2].secure_url : undefined,
@@ -90,6 +103,7 @@ async function createProfile(req, res) {
       return res.status(201).json(response);
     }
   } catch (error) {
+    await deleteFiles([...imageFields, "kycDocument"], req);
     console.error(error);
     return res.status(500).send("Internal Server Error");
   }
@@ -145,11 +159,9 @@ async function getAllCelebrities(req, res) {
         (celebrity) => celebrity.status === status
       );
       return res.status(200).json(fetchCelebritiesByStatus);
-    }
-    else {
+    } else {
       return res.status(200).json(celebritiesProfiles);
     }
-
   } catch {
     return res.status(500).send("Internal Server Error");
   }

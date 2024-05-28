@@ -10,7 +10,7 @@ const ProfileSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: Object.values(ProfileStatus),
-    default: ProfileStatus.PENDING,
+    required: [true, "Invalid Status"],
   },
   name: {
     type: String,
