@@ -23,7 +23,7 @@ async function deleteFiles(imagesData, req) {
 async function createProfile(req, res) {
   try {
     const imageFields = ["profilePic", "coverPic", "backgroundPic"];
-    const { username, walletAddress, email, role, name } = req.body;
+    const { username, walletAddress, email, role, name,managerNumber,managerEmail,websiteURL } = req.body;
 
     const profileExists = await Profile.findOne({
       $or: [{ username }, { walletAddress }, { email }],
@@ -74,6 +74,9 @@ async function createProfile(req, res) {
       email,
       role,
       name,
+      managerNumber,
+      managerEmail,
+      websiteURL,
       profilePic: results[0] ? results[0].secure_url : undefined,
       coverPic: results[1] ? results[1].secure_url : undefined,
       backgroundPic: results[2] ? results[2].secure_url : undefined,
@@ -148,7 +151,6 @@ async function getAllCelebrities(req, res) {
     }
 
   } catch {
-    console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 }
