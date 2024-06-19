@@ -171,8 +171,7 @@ async function updateProfile(req, res) {
   const { walletAddress } = req.params;
   const { name, managerEmail, managerNumber, websiteURL } = req.body;
   const imageFields = ["profilePic", "coverPic", "backgroundPic"];
-  const isCelebrity = req.body.role === ProfileRole.CELEBRITY;
-
+  
   try {
     // Find the existing profile
     const profile = await Profile.findOne({ walletAddress });
@@ -180,6 +179,8 @@ async function updateProfile(req, res) {
       await deleteFiles([...imageFields], req);
       return res.status(404).json({ message: "Profile not found" });
     }
+    
+    const isCelebrity = profile.role === ProfileRole.CELEBRITY;
 
     // Upload new images to Cloudinary
     const uploadPromises = imageFields.map((field) => {
