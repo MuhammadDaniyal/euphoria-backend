@@ -123,6 +123,25 @@ async function getProfile(req, res) {
   }
 }
 
+async function getAllCelebrities(req, res) {
+  const { status } = req.query;
+  try {
+    const celebritiesProfiles = await Profile.find({
+      role: ProfileRole.CELEBRITY,
+    });
+    if (status) {
+      const fetchCelebritiesByStatus = celebritiesProfiles.filter(
+        (celebrity) => celebrity.status === status
+      );
+      return res.status(200).json(fetchCelebritiesByStatus);
+    } else {
+      return res.status(200).json(celebritiesProfiles);
+    }
+  } catch {
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
 async function updateProfileStatus(req, res) {
   const { walletAddress } = req.params;
   const { status } = req.body;
@@ -148,21 +167,68 @@ async function updateProfileStatus(req, res) {
   }
 }
 
-async function getAllCelebrities(req, res) {
-  const { status } = req.query;
+async function updateProfile(req, res) {
+  const { walletAddress } = req.params;
+  const { name, managerEmail, managerNumber, websiteURL } = req.body;
+  const imageFields = ["profilePic", "coverPic", "backgroundPic"];
+  const isCelebrity = req.body.role === ProfileRole.CELEBRITY;
+
   try {
-    const celebritiesProfiles = await Profile.find({
-      role: ProfileRole.CELEBRITY,
-    });
-    if (status) {
-      const fetchCelebritiesByStatus = celebritiesProfiles.filter(
-        (celebrity) => celebrity.status === status
-      );
-      return res.status(200).json(fetchCelebritiesByStatus);
-    } else {
-      return res.status(200).json(celebritiesProfiles);
+    // Find the existing profile
+    const profile = await Profile.findOne({ walletAddress });
+    if (!profile) {
+      await deleteFiles([...imageFields], req);
+      return res.status(404).json({ message: "Profile not found" });
     }
-  } catch {
+
+    // Upload new images to Cloudinary
+    const uploadPromises = imageFields.map((field) => {
+      if (req.files[field]) {
+        return cloudinary.uploader.upload(req.files[field][0].path, {
+          folder: "Profile_Media",
+        });
+      }
+      return null;
+    });
+
+    const results = await Promise.all(uploadPromises);
+
+    // Prepare the update data
+    const updateData = {
+      name: name || profile.name,
+      profilePic: results[0] ? results[0].secure_url : profile.profilePic,
+      coverPic: results[1] ? results[1].secure_url : profile.coverPic,
+      backgroundPic: results[2] ? results[2].secure_url : profile.backgroundPic,
+    };
+
+    if (isCelebrity) {
+      updateData.managerEmail = managerEmail || profile.managerEmail;
+      updateData.managerNumber = managerNumber || profile.managerNumber;
+      updateData.websiteURL = websiteURL || profile.websiteURL;
+    }
+
+    // Update the profile
+    const updatedProfile = await Profile.findOneAndUpdate(
+      { walletAddress },
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!updatedProfile) {
+      await deleteFiles([...imageFields], req);
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    // Delete old files from server
+    await deleteFiles([...imageFields], req);
+
+    return res.json({
+      message: "Profile updated successfully",
+      profile: updatedProfile,
+    });
+  } catch (error) {
+    await deleteFiles([...imageFields], req);
+    console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 }
@@ -172,4 +238,5 @@ module.exports = {
   getProfile,
   updateProfileStatus,
   getAllCelebrities,
+  updateProfile,
 };

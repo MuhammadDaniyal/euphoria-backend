@@ -6,6 +6,7 @@ const {
   getProfile,
   updateProfileStatus,
   getAllCelebrities,
+  updateProfile,
 } = require("../controllers");
 const multer = require("multer");
 
@@ -37,5 +38,13 @@ router.route("/:walletAddress").get(getProfile);
 
 /** PUT METHOD */
 router.route("/:walletAddress/status").patch(updateProfileStatus);
+router.route("/:walletAddress/update").patch(
+  upload.fields([
+    { name: "profilePic", maxCount: 1 },
+    { name: "coverPic", maxCount: 1 },
+    { name: "backgroundPic", maxCount: 1 },
+  ]),
+  updateProfile
+);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const {
   getProfile,
   updateProfileStatus,
   getAllCelebrities,
+  updateProfile
 } = require("./profileController");
 
 module.exports = {
@@ -10,4 +11,5 @@ module.exports = {
   getProfile,
   updateProfileStatus,
   getAllCelebrities,
+  updateProfile
 };
