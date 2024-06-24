@@ -169,7 +169,7 @@ async function updateProfileStatus(req, res) {
 
 async function updateProfile(req, res) {
   const { walletAddress } = req.params;
-  const { name, managerEmail, managerNumber, websiteURL } = req.body;
+  const { name, email,managerEmail, managerNumber, websiteURL } = req.body;
   const imageFields = ["profilePic", "coverPic", "backgroundPic"];
   
   try {
@@ -197,6 +197,7 @@ async function updateProfile(req, res) {
     // Prepare the update data
     const updateData = {
       name: name || profile.name,
+      email: email || profile.email,
       profilePic: results[0] ? results[0].secure_url : profile.profilePic,
       coverPic: results[1] ? results[1].secure_url : profile.coverPic,
       backgroundPic: results[2] ? results[2].secure_url : profile.backgroundPic,
