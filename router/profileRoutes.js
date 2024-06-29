@@ -7,6 +7,7 @@ const {
   updateProfileStatus,
   getAllCelebrities,
   updateProfile,
+  getAllProfiles
 } = require("../controllers");
 const multer = require("multer");
 
@@ -34,6 +35,7 @@ router.route("/").post(
 
 /** GET METHOD */
 router.route("/celebrities").get(getAllCelebrities);
+router.route("/profiles").get(getAllProfiles);
 router.route("/:walletAddress").get(getProfile);
 
 /** PUT METHOD */

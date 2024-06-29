@@ -45,8 +45,8 @@ async function createProfile(req, res) {
         profileExists.username === username
           ? "Profile with this username already exists, provide a unique username"
           : profileExists.walletAddress === walletAddress
-          ? "Profile with this wallet address already exists, provide a unique wallet address"
-          : "Profile with this email already exists, provide a unique email";
+            ? "Profile with this wallet address already exists, provide a unique wallet address"
+            : "Profile with this email already exists, provide a unique email";
 
       return res.status(400).json({ error: errorMsg });
     }
@@ -142,6 +142,15 @@ async function getAllCelebrities(req, res) {
   }
 }
 
+async function getAllProfiles(req, res) {
+  try {
+    const allProfiles = await Profile.find({});
+    return res.status(200).json(allProfiles);
+  } catch (error) {
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
 async function updateProfileStatus(req, res) {
   const { walletAddress } = req.params;
   const { status } = req.body;
@@ -169,9 +178,9 @@ async function updateProfileStatus(req, res) {
 
 async function updateProfile(req, res) {
   const { walletAddress } = req.params;
-  const { name, email,managerEmail, managerNumber, websiteURL } = req.body;
+  const { name, email, managerEmail, managerNumber, websiteURL } = req.body;
   const imageFields = ["profilePic", "coverPic", "backgroundPic"];
-  
+
   try {
     // Find the existing profile
     const profile = await Profile.findOne({ walletAddress });
@@ -179,7 +188,7 @@ async function updateProfile(req, res) {
       await deleteFiles([...imageFields], req);
       return res.status(404).json({ message: "Profile not found" });
     }
-    
+
     const isCelebrity = profile.role === ProfileRole.CELEBRITY;
 
     // Upload new images to Cloudinary
@@ -241,4 +250,5 @@ module.exports = {
   updateProfileStatus,
   getAllCelebrities,
   updateProfile,
+  getAllProfiles
 };
