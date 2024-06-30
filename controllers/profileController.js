@@ -45,8 +45,8 @@ async function createProfile(req, res) {
         profileExists.username === username
           ? "Profile with this username already exists, provide a unique username"
           : profileExists.walletAddress === walletAddress
-            ? "Profile with this wallet address already exists, provide a unique wallet address"
-            : "Profile with this email already exists, provide a unique email";
+          ? "Profile with this wallet address already exists, provide a unique wallet address"
+          : "Profile with this email already exists, provide a unique email";
 
       return res.status(400).json({ error: errorMsg });
     }
@@ -143,9 +143,17 @@ async function getAllCelebrities(req, res) {
 }
 
 async function getAllProfiles(req, res) {
+  const { status } = req.query;
   try {
-    const allProfiles = await Profile.find({});
-    return res.status(200).json(allProfiles);
+    if (status) {
+      const allVerifiedProfiles = await Profile.find({
+        status: status,
+      });
+      return res.status(200).json(allVerifiedProfiles);
+    } else {
+      const allProfiles = await Profile.find({});
+      return res.status(200).json(allProfiles);
+    }
   } catch (error) {
     return res.status(500).send("Internal Server Error");
   }
@@ -250,5 +258,5 @@ module.exports = {
   updateProfileStatus,
   getAllCelebrities,
   updateProfile,
-  getAllProfiles
+  getAllProfiles,
 };
