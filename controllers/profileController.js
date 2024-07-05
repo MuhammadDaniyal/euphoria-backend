@@ -257,7 +257,7 @@ const getNameFromAddress = async (req, res) => {
   try {
     const profile = await Profile.findOne(
       { walletAddress },
-      { name: 1, username: 1, _id: 0 }
+      { name: 1, username: 1,profilePic:1, _id: 0 }
     );
     if (!profile) {
       return res.status(404).json({ message: "Profile1 not found" });
