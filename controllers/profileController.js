@@ -252,6 +252,23 @@ async function updateProfile(req, res) {
   }
 }
 
+const getNameFromAddress = async (req, res) => {
+  const { walletAddress } = req.params;
+  try {
+    const profile = await Profile.findOne(
+      { walletAddress },
+      { name: 1, username: 1, _id: 0 }
+    );
+    if (!profile) {
+      return res.status(404).json({ message: "Profile1 not found" });
+    }
+    return res.status(200).json(profile);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
 module.exports = {
   createProfile,
   getProfile,
@@ -259,4 +276,5 @@ module.exports = {
   getAllCelebrities,
   updateProfile,
   getAllProfiles,
+  getNameFromAddress,
 };

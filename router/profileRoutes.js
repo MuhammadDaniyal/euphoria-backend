@@ -7,7 +7,8 @@ const {
   updateProfileStatus,
   getAllCelebrities,
   updateProfile,
-  getAllProfiles
+  getAllProfiles,
+  getNameFromAddress
 } = require("../controllers");
 const multer = require("multer");
 
@@ -37,6 +38,7 @@ router.route("/").post(
 router.route("/celebrities").get(getAllCelebrities);
 router.route("/profiles").get(getAllProfiles);
 router.route("/:walletAddress").get(getProfile);
+router.route("/name/:walletAddress").get(getNameFromAddress);
 
 /** PUT METHOD */
 router.route("/:walletAddress/status").patch(updateProfileStatus);
