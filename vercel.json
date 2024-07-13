@@ -1,10 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "path/to/dir/**/*": {
-      "maxDuration": 60
-    }
-  },
   "builds": [
     {
       "src": "./app.js",
