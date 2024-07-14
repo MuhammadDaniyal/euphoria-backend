@@ -5,7 +5,8 @@ const {
   getAllCelebrities,
   updateProfile,
   getAllProfiles,
-  getNameFromAddress
+  getNameFromAddress,
+  getNamesAllProfiles
 } = require("./profileController");
 
 module.exports = {
@@ -15,5 +16,6 @@ module.exports = {
   getAllCelebrities,
   updateProfile,
   getAllProfiles,
-  getNameFromAddress
+  getNameFromAddress,
+  getNamesAllProfiles
 };
